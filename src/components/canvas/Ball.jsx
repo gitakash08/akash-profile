@@ -10,8 +10,13 @@ import {
 
 import CanvasLoader from "../Loader";
 
-const Ball = (props) => {
-  const [decal] = useTexture([props.imgUrl]);
+const Ball = ({ imgUrl }) => {
+  const [decal, loading, error] = useTexture([imgUrl]);
+
+  // Error Handling (e.g., log if texture fails to load)
+  if (error) {
+    console.error("Error loading texture:", error);
+  }
 
   return (
     <Float speed={1.75} rotationIntensity={1} floatIntensity={2}>
@@ -25,13 +30,15 @@ const Ball = (props) => {
           polygonOffsetFactor={-5}
           flatShading
         />
-        <Decal
-          position={[0, 0, 1]}
-          rotation={[2 * Math.PI, 0, 6.25]}
-          scale={1}
-          map={decal}
-          flatShading
-        />
+        {!loading && !error && (
+          <Decal
+            position={[0, 0, 1]}
+            rotation={[2 * Math.PI, 0, 6.25]}
+            scale={1}
+            map={decal}
+            flatShading
+          />
+        )}
       </mesh>
     </Float>
   );
@@ -40,9 +47,9 @@ const Ball = (props) => {
 const BallCanvas = ({ icon }) => {
   return (
     <Canvas
-      frameloop='demand'
-      dpr={[1, 2]}
-      gl={{ preserveDrawingBuffer: true }}
+      frameloop='demand' // Optimized for performance, renders only when needed
+      dpr={[1, 2]} // Device pixel ratio optimization
+      gl={{ preserveDrawingBuffer: true }} // For screenshots or image preservation
     >
       <Suspense fallback={<CanvasLoader />}>
         <OrbitControls enableZoom={false} />
