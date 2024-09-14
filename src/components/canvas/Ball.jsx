@@ -1,22 +1,10 @@
-import React, { Suspense } from "react";
+import React, { Suspense, useEffect, useState } from "react";
 import { Canvas } from "@react-three/fiber";
-import {
-  Decal,
-  Float,
-  OrbitControls,
-  Preload,
-  useTexture,
-} from "@react-three/drei";
-
+import { Decal, Float, OrbitControls, Preload, useTexture } from "@react-three/drei";
 import CanvasLoader from "../Loader";
 
-const Ball = ({ imgUrl }) => {
-  const [decal, loading, error] = useTexture([imgUrl]);
-
-  // Error Handling (e.g., log if texture fails to load)
-  if (error) {
-    console.error("Error loading texture:", error);
-  }
+const Ball = (props) => {
+  const [decal] = useTexture([props.imgUrl]);
 
   return (
     <Float speed={1.75} rotationIntensity={1} floatIntensity={2}>
@@ -30,15 +18,13 @@ const Ball = ({ imgUrl }) => {
           polygonOffsetFactor={-5}
           flatShading
         />
-        {!loading && !error && (
-          <Decal
-            position={[0, 0, 1]}
-            rotation={[2 * Math.PI, 0, 6.25]}
-            scale={1}
-            map={decal}
-            flatShading
-          />
-        )}
+        <Decal
+          position={[0, 0, 1]}
+          rotation={[2 * Math.PI, 0, 6.25]}
+          scale={1}
+          map={decal}
+          flatShading
+        />
       </mesh>
     </Float>
   );
@@ -47,9 +33,9 @@ const Ball = ({ imgUrl }) => {
 const BallCanvas = ({ icon }) => {
   return (
     <Canvas
-      frameloop='demand' // Optimized for performance, renders only when needed
-      dpr={[1, 2]} // Device pixel ratio optimization
-      gl={{ preserveDrawingBuffer: true }} // For screenshots or image preservation
+      frameloop='demand'
+      dpr={[1, 2]}
+      gl={{ preserveDrawingBuffer: true }}
     >
       <Suspense fallback={<CanvasLoader />}>
         <OrbitControls enableZoom={false} />
