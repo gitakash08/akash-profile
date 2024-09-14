@@ -4,61 +4,62 @@ import { OrbitControls, Preload, useGLTF } from "@react-three/drei";
 import CanvasLoader from "../Loader";
 
 const Computers = ({ isMobile }) => {
-  const computer = useGLTF("./desktop_pc/scene.gltf");
+  const { scene, error } = useGLTF("./desktop_pc/scene.gltf");
+
+  if (error) {
+    console.error("Error loading GLTF model:", error);
+  }
 
   return (
     <mesh>
-      <hemisphereLight intensity={0.15} groundColor='black' />
+      <hemisphereLight intensity={2.5} groundColor='black' />
       <spotLight
-        position={[-20, 50, 10]}
+        position={[-20, 80, 10]}
         angle={0.12}
         penumbra={1}
         intensity={1}
         castShadow
         shadow-mapSize={1024}
       />
-      <pointLight intensity={1} />
-      <primitive
-        object={computer.scene}
-        scale={isMobile ? 0.7 : 0.75}
-        position={isMobile ? [0, -3, -2.2] : [0, -3.25, -1.5]}
-        rotation={[-0.01, -0.2, -0.1]}
-      />
+      <pointLight intensity={1.5} />
+      {scene && (
+        <primitive
+          object={scene}
+          scale={isMobile ? 0.7 : 0.75}
+          position={isMobile ? [0, -3, -2.2] : [0, -3.5, -1.5]}
+          rotation={[-0.01, -0.2, -0.1]}
+        />
+      )}
     </mesh>
   );
 };
 
+
 const ComputersCanvas = () => {
-  const [isMobile, setIsMobile] = useState(false);
+  const [isMobile, setIsMobile] = useState(window.matchMedia("(max-width: 500px)").matches);
 
   useEffect(() => {
-    // Add a listener for changes to the screen size
-    const mediaQuery = window.matchMedia("(max-width: 500px)");
-
-    // Set the initial value of the `isMobile` state variable
-    setIsMobile(mediaQuery.matches);
-
-    // Define a callback function to handle changes to the media query
+    // Define a debounced function to avoid excessive re-renders on resize
     const handleMediaQueryChange = (event) => {
-      setIsMobile(event.matches);
+      if (event.matches !== isMobile) {
+        setIsMobile(event.matches);
+      }
     };
 
-    // Add the callback function as a listener for changes to the media query
+    const mediaQuery = window.matchMedia("(max-width: 500px)");
     mediaQuery.addEventListener("change", handleMediaQueryChange);
 
-    // Remove the listener when the component is unmounted
-    return () => {
-      mediaQuery.removeEventListener("change", handleMediaQueryChange);
-    };
-  }, []);
+    // Clean up the event listener on unmount
+    return () => mediaQuery.removeEventListener("change", handleMediaQueryChange);
+  }, [isMobile]);
 
   return (
     <Canvas
-      frameloop='demand'
+      frameloop='demand' // Optimize rendering performance
       shadows
-      dpr={[1, 2]}
+      dpr={[1, 2]} // Adjust device pixel ratio for better performance
       camera={{ position: [20, 3, 5], fov: 25 }}
-      gl={{ preserveDrawingBuffer: true }}
+      gl={{ preserveDrawingBuffer: true }} // Retain drawing buffer for screenshots
     >
       <Suspense fallback={<CanvasLoader />}>
         <OrbitControls
